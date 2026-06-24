@@ -374,18 +374,19 @@ function processData(data) {
     duplicate_edges,
 
     // Trees (valid, non-cyclic)
-    trees: trees.map(t => ({
-      root: t.root,
-      depth: t.depth,
-      tree: t.tree,
-    })),
-
-    // Cycles
-    cycles: cycles.map(c => ({
-      root: c.root,
-      has_cycle: true,
-      tree: {},
-    })),
+    // Hierarchies (trees and cycles)
+    hierarchies: [
+      ...trees.map(t => ({
+        root: t.root,
+        tree: t.tree,
+        depth: t.depth,
+      })),
+      ...cycles.map(c => ({
+        root: c.root,
+        tree: {},
+        has_cycle: true,
+      }))
+    ],
 
     // Summary
     summary: {
