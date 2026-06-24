@@ -247,7 +247,10 @@ function processData(data) {
 
   // ── 2. DUPLICATE DETECTION ─────────────────────────────────────────────────
   // An edge is a duplicate if the exact "Parent->Child" pair was seen before.
+  // Per spec: each duplicate pair appears ONCE in duplicate_edges regardless
+  // of how many times it repeats (e.g. 3× "A->B" → duplicate_edges: ["A->B"]).
   const seenEdgeKeys = new Set();
+  const seenDuplicateKeys = new Set();  // Tracks already-recorded duplicates
   const duplicate_edges = [];
   const uniqueEdges = [];
 
@@ -255,7 +258,12 @@ function processData(data) {
     const key = `${edge.parent}->${edge.child}`;
 
     if (seenEdgeKeys.has(key)) {
-      duplicate_edges.push(edge.raw);   // Record duplicate; skip
+      // Only add to duplicate_edges the first time we see this key again
+      if (!seenDuplicateKeys.has(key)) {
+        duplicate_edges.push(edge.raw);
+        seenDuplicateKeys.add(key);
+      }
+      // else: already recorded; skip silently
     } else {
       seenEdgeKeys.add(key);
       uniqueEdges.push(edge);           // First occurrence → keep
@@ -373,7 +381,6 @@ function processData(data) {
     invalid_entries,
     duplicate_edges,
 
-    // Trees (valid, non-cyclic)
     // Hierarchies (trees and cycles)
     hierarchies: [
       ...trees.map(t => ({
